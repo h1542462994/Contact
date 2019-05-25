@@ -457,7 +457,7 @@ protected:
 							}
 							else
 							{
-								cout << c->name;
+								cout << setw(12) << c->name;
 							}
 							cout << setw(6) << (c->sex == "M" ? "男" : "女")
 								<< setw(20) << c->phone
@@ -466,9 +466,18 @@ protected:
 						}
 						else if (subpage == "search-name")
 						{
-							cout << consoleforecolor::ochre
-								<< setw(12) << c->name
-								<< consoleforecolor::normal
+							cout << consoleforecolor::ochre;
+
+							if (getContext().eggvar == 1 && (c->name == "cg"))
+							{
+								cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
+							}
+							else
+							{
+								cout << setw(12) << c->name;
+							}
+
+							cout<< consoleforecolor::normal
 								<< setw(6) << (c->sex == "M" ? "男" : "女")
 								<< setw(20) << c->phone
 								<< setw(20) << c->address
@@ -479,9 +488,17 @@ protected:
 						{
 							cout << consoleforecolor::ochre
 								<< setw(20) << c->phone
-								<< consoleforecolor::normal
-								<< setw(12) << c->name
-								<< setw(6) << (c->sex == "M" ? "男" : "女")
+								<< consoleforecolor::normal;
+								//<< setw(12) << c->name
+								if (getContext().eggvar == 1 && (c->name == "cg"))
+								{
+									cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
+								}
+								else
+								{
+									cout << setw(12) << c->name;
+								}
+								 cout << setw(6) << (c->sex == "M" ? "男" : "女")
 								<< setw(20) << c->address
 								<< setw(6) << (c->type == "" ? "无" : c->type)
 								<< consoleforecolor::normal;
@@ -490,9 +507,17 @@ protected:
 						{
 							cout << consoleforecolor::ochre
 								<< setw(6) << (c->type == "" ? "无" : c->type)
-								<< consoleforecolor::normal
-								<< setw(12) << c->name
-								<< setw(6) << (c->sex == "M" ? "男" : "女")
+								<< consoleforecolor::normal;
+								//<< setw(12) << c->name
+								if (getContext().eggvar == 1 && (c->name == "cg"))
+								{
+									cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
+								}
+								else
+								{
+									cout << setw(12) << c->name;
+								}
+								 cout << setw(6) << (c->sex == "M" ? "男" : "女")
 								<< setw(20) << c->phone
 								<< setw(20) << c->address
 								<< consoleforecolor::normal;
