@@ -763,6 +763,7 @@ protected:
 	}
 
 private:
+	//用于检查文件名是否合法。
 	int checkFileName(string fileName)
 	{
 		if (fileName == "")

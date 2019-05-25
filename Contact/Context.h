@@ -175,6 +175,7 @@ public:
 			pageChangedListener->onPageChanged(page);
 		}
 	}
+	//按照模式查找联系人，查找数据将会保存在search字段中
 	void searchContact(string mode, string param)
 	{
 		
@@ -218,6 +219,7 @@ public:
 
 		search = re;
 	}
+	//清空查找数据
 	void clearSearch() 
 	{
 		if (search!= NULL)
@@ -226,6 +228,7 @@ public:
 			search = NULL;
 		}
 	}
+	//展示一下联系人的分组情况
 	void showContactGroup()
 	{
 		if (contacts.size() == 0)
@@ -261,10 +264,18 @@ public:
 				}
 				cout << "  ";
 				Contact* c = ccopy[i];
-				cout << consoleforecolor::normal
+				cout << consoleforecolor::normal;
 					//<< setw(6) << i 
-					<< setw(12) << c->name
-					<< setw(6) << (c->sex == "M" ? "男" : "女")
+					//<< setw(12) << c->name
+					if (eggvar == 1 && (c->name == "cg"))
+					{
+						cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
+					}
+					else
+					{
+						cout << setw(12) << c->name;
+					}
+				    cout << setw(6) << (c->sex == "M" ? "男" : "女")
 					<< setw(20) << c->phone
 					<< setw(20) << c->address
 					<< setw(6) << (c->type == "" ? "无" : c->type)
@@ -272,6 +283,7 @@ public:
 			}
 		}
 	}
+	//按照模式对联系人进行排序
 	void sortContact(string mode)
 	{
 		if (mode == "name")
@@ -291,15 +303,19 @@ public:
 			sort(contacts.begin(), contacts.end(), contactComparerByGroup);
 		}
 	}
-
+	//查询的结果的动态引用
 	vector<pair< Contact*,int>>* search = NULL;
 	string subpage;
+	//联系人的存储
 	vector<Contact*> contacts;
+	//当前的联系人，仅在当page="contact"时生效
 	Contact* currentContact = NULL;
+	//文件名
 	string fileName = "";
+	//文件的状态，0表示文件未打开或者未更改，1表示文件已经更改，但没有保存到文件。
 	int fileState = 0;
 	//标识是否是彩蛋
-	const int eggvar = 0;
+	const int eggvar = 1;
 private:
 	inline void init()
 	{
@@ -314,7 +330,7 @@ private:
 	IOnPageChangedListener* pageChangedListener = NULL;
 	
 
-
+	//检查str2是否是str1的子串，一种最简单的模糊查找方法
 	bool hasSubString(string str1,string str2)
 	{
 		if (str1.find(str2)!= string::npos)
