@@ -126,11 +126,13 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="AppBase.h" />
     <ClInclude Include="Contact.h" />
+    <ClInclude Include="ContactGroup.h" />
     <ClInclude Include="listener.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="consolecolor.h" />
     <ClInclude Include="Context.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="Tool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

@@ -32,13 +32,13 @@ public:
 	friend ostream& operator<< (ostream& out, Menu& menu)
 	{
 		//out << "===================menu===================" << endl;
-		out << consoleforecolor::green;
+		out << consoleforecolor::green <<  "***********************************" << endl;
 		int index = 0;
 		for (int i = 0; i < menu.size(); i++)
 		{
 			out << (++index) << "." << menu[i] << endl;
 		}
-		out << consoleforecolor::normal;
+		out << "***********************************" << endl << consoleforecolor::normal;
 		//out << "==========================================" << endl;
 		return out;
 	}

@@ -10,10 +10,10 @@
 
 using namespace std;
 
-class DApp :public AppBase, public IOnPageChangedListener
+class App :public AppBase, public IOnPageChangedListener
 {
 public:
-	DApp(Context* context) :AppBase(context) {}
+	App(Context* context) :AppBase(context) {}
 
 protected:
 	virtual void onLoad() override
@@ -37,6 +37,7 @@ protected:
 
 		if (subpage == "")
 		{
+			//system("cls");
 			cout << getContext().getCurrentMenu();
 		}
 
@@ -55,7 +56,7 @@ protected:
 		{
 			if (subpage == "")
 			{
-				getContext().saveFile();
+				getContext().group.saveFile();
 				tip = "请选择菜单中的一项";
 			}
 			else if (subpage == "create")
@@ -183,15 +184,14 @@ protected:
 				else
 				{
 
-					bool r = getContext().createFile(command);
+					bool r = getContext().group.loadFile(command);
 					if (r)
 					{
-						Log::w("已创建文件" + command);
+						Log::w("已打开文件" + command);
 					}
 					else
 					{
-						getContext().loadFile(command);
-						Log::w("已打开文件" + command);
+						Log::w("已创建文件" + command);
 					}
 					getContext().subpage = "";
 					getContext().setPage("file");
@@ -211,46 +211,9 @@ protected:
 				}
 				else if (cmd == 2)
 				{
-					if (getContext().contacts.size() < 1)
-					{
-						Log::w("当前还没有联系人");
-					}
-					else
-					{
-						cout << consoleforecolor::cyan << setw(6) << std::left << "序号"
-							<< setw(12) << "姓名"
-							<< setw(6) << "性别"
-							<< setw(20) << "电话"
-							<< setw(20) << "地址"
-							<< setw(6) << "分组" << consoleforecolor::normal << endl;
-
-						for (int i = 0; i < getContext().contacts.size(); i++)
-						{
-							cout << consoleforecolor::cyan << setw(6) << std::left << i << consoleforecolor::normal;
-
-
-							Contact* c = getContext().contacts[i];
-
-							if (getContext().eggvar == 1 && (c->name == "cg"))
-							{
-								cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
-							}
-							else
-							{
-								cout << setw(12) << c->name;
-							}
-
-							cout
-								<< setw(6) << (c->sex == "M" ? "男" : "女")
-								<< setw(20) << c->phone
-								<< setw(20) << c->address
-								<< setw(6) << (c->type == "" ? "无" : c->type)
-								<< consoleforecolor::normal << endl;
-						}
-						//getContext().search = NULL;
-						subpage = "select";
-					}
-
+					getContext().group.clearSearch(); //deprecated;
+					getContext().group.display();
+					subpage = "select";
 				}
 				else if (cmd == 3)
 				{
@@ -270,7 +233,8 @@ protected:
 				}
 				else if (cmd == 7)
 				{
-					getContext().showContactGroup();
+					getContext().group.displayGroup();
+					subpage = "select";
 				}
 				else if (cmd == 8)
 				{
@@ -278,7 +242,7 @@ protected:
 				}
 				else if (cmd == 9)
 				{
-					getContext().fileName = "";
+					getContext().group.exitFile();
 					getContext().setPage("home");
 				}
 				else
@@ -299,30 +263,10 @@ protected:
 				}
 				else
 				{
-					bool flag = false;
-					for (int i = 0; i < getContext().contacts.size(); i++)
-					{
-						if (getContext().contacts[i]->name == command)
-						{
-							getContext().currentContact = getContext().contacts[i];
-							Log::w("打开联系人成功");
-							flag = true;
-							break;
-						}
-					}
-
-					if (!flag)
-					{
-						Contact* contact = new Contact(command);
-						getContext().contacts.push_back(contact);
-						getContext().currentContact = contact;
-					}
-
+					getContext().group.select(command);
 
 					getContext().subpage = "";
 					getContext().setPage("contact");
-
-					getContext().fileState = 1;
 				}
 
 
@@ -330,207 +274,61 @@ protected:
 			//选择界面
 			else if (subpage == "select")
 			{
-				if (getContext().search == NULL)
+				int index = -2;
+				istr >> index;
+				if (index == -1)
 				{
-					auto se = &getContext().contacts;
-
-					int index = -2;
-					istr >> index;
-
-					if (index == -1)
-					{
-						subpage = "";
-					}
-					else if (index >= 0 && index < se->size())
-					{
-						getContext().currentContact = (*se)[index];
-						getContext().clearSearch();
-						subpage = "";
-						getContext().setPage("contact");
-					}
-					else
-					{
-						Log::e("无效的输入");
-					}
-
+					subpage = "";
+				}
+				else if (index == -2)
+				{
+					Log::e("输入并不合法");
 				}
 				else
 				{
-					auto se = getContext().search;
-
-					int index = -2;
-					istr >> index;
-
-					if (index == -1)
+					if (getContext().group.select(index))
 					{
-						subpage = "";
-					}
-					else if (index >= 0 && index < se->size())
-					{
-						getContext().currentContact = (*se)[index].first;
 						subpage = "";
 						getContext().setPage("contact");
 					}
 					else
 					{
-						Log::e("无效的输入");
+						Log::e("输入的下标不在合理的范围内");
 					}
 				}
 
+				getContext().group.clearSearch();
 			}
 			//按照人员来查找
 			else if (subpage == "search-name" || subpage == "search-phone" || subpage == "search-address" || subpage == "search-group")
 			{
+				bool re = false;
+
 				if (subpage == "search-name")
 				{
-					getContext().searchContact("name", command);
+					re = getContext().group.search("name", command);
 				}
 				else if (subpage == "search-phone")
 				{
-					getContext().searchContact("phone", command);
+					re = getContext().group.search("phone", command);
 				}
 				else if (subpage == "search-address")
 				{
-					getContext().searchContact("address", command);
+					re = getContext().group.search("address", command);
 				}
-				//getContext().searchContact("name", command);
 				else if (subpage == "search-group")
 				{
-					getContext().searchContact("group", command);
+					re = getContext().group.search("group", command);
 				}
 
-				if (getContext().search->size() > 0)
+				getContext().group.display();
+
+				if (re)
 				{
-					cout << consoleforecolor::cyan
-						<< setw(6) << std::left << "序号";
-					if (subpage == "search-address")
-					{
-						cout << setw(20) << "地址"
-							<< setw(12) << "姓名"
-							<< setw(6) << "性别"
-							<< setw(20) << "电话"
-							<< setw(6) << "分组" << consoleforecolor::normal << endl;
-					}
-					else if (subpage == "search-name")
-					{
-						cout
-							<< setw(12) << "姓名"
-							<< setw(6) << "性别"
-							<< setw(20) << "电话"
-							<< setw(20) << "地址"
-							<< setw(6) << "分组" << consoleforecolor::normal << endl;
-					}
-					else if (subpage == "search-phone")
-					{
-						cout
-							<< setw(20) << "电话"
-							<< setw(12) << "姓名"
-							<< setw(6) << "性别"
-							<< setw(20) << "地址"
-							<< setw(6) << "分组" << consoleforecolor::normal << endl;
-					}
-					else if (subpage == "search-group")
-					{
-						cout
-							<< setw(20) << "地址"
-							<< setw(12) << "姓名"
-							<< setw(6) << "性别"
-							<< setw(20) << "电话"
-							<< setw(6) << "分组" << consoleforecolor::normal << endl;
-					}
-
-					for (int i = 0; i < getContext().search->size(); i++)
-					{
-						cout << consoleforecolor::cyan << setw(6) << i << consoleforecolor::normal;
-						Contact* c = getContext().search->at(i).first;
-
-						if (subpage == "search-address")
-						{
-
-							cout << consoleforecolor::ochre
-								<< setw(20) << c->address
-								<< consoleforecolor::normal;
-							//<< setw(12) << c->name 
-							if (getContext().eggvar == 1 && (c->name == "cg"))
-							{
-								cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
-							}
-							else
-							{
-								cout << setw(12) << c->name;
-							}
-							cout << setw(6) << (c->sex == "M" ? "男" : "女")
-								<< setw(20) << c->phone
-								<< setw(6) << (c->type == "" ? "无" : c->type)
-								<< consoleforecolor::normal;
-						}
-						else if (subpage == "search-name")
-						{
-							cout << consoleforecolor::ochre;
-
-							if (getContext().eggvar == 1 && (c->name == "cg"))
-							{
-								cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
-							}
-							else
-							{
-								cout << setw(12) << c->name;
-							}
-
-							cout<< consoleforecolor::normal
-								<< setw(6) << (c->sex == "M" ? "男" : "女")
-								<< setw(20) << c->phone
-								<< setw(20) << c->address
-								<< setw(6) << (c->type == "" ? "无" : c->type)
-								<< consoleforecolor::normal;
-						}
-						else if (subpage == "search-phone")
-						{
-							cout << consoleforecolor::ochre
-								<< setw(20) << c->phone
-								<< consoleforecolor::normal;
-								//<< setw(12) << c->name
-								if (getContext().eggvar == 1 && (c->name == "cg"))
-								{
-									cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
-								}
-								else
-								{
-									cout << setw(12) << c->name;
-								}
-								 cout << setw(6) << (c->sex == "M" ? "男" : "女")
-								<< setw(20) << c->address
-								<< setw(6) << (c->type == "" ? "无" : c->type)
-								<< consoleforecolor::normal;
-						}
-						else if (subpage == "search-group")
-						{
-							cout << consoleforecolor::ochre
-								<< setw(6) << (c->type == "" ? "无" : c->type)
-								<< consoleforecolor::normal;
-								//<< setw(12) << c->name
-								if (getContext().eggvar == 1 && (c->name == "cg"))
-								{
-									cout << setw(12) << consoleforecolor::red << ("(*＾-＾*) " + c->name) << consoleforecolor::normal;
-								}
-								else
-								{
-									cout << setw(12) << c->name;
-								}
-								 cout << setw(6) << (c->sex == "M" ? "男" : "女")
-								<< setw(20) << c->phone
-								<< setw(20) << c->address
-								<< consoleforecolor::normal;
-						}
-						cout << endl;
-					}
-
 					subpage = "select";
 				}
 				else
 				{
-					Log::i("未找到该联系人");
-
 					subpage = "";
 				}
 			}
@@ -548,27 +346,23 @@ protected:
 					{
 						Log::w("已退出排序");
 					}
-					else if (getContext().contacts.size() > 0)
+					else if (!getContext().group.empty())
 					{
 						if (cmd == 1)
 						{
-							getContext().sortContact("name");
-							getContext().fileState = 1;
+							getContext().group.sortContact("name");
 						}
 						else if (cmd == 2)
 						{
-							getContext().sortContact("phone");
-							getContext().fileState = 1;
+							getContext().group.sortContact("phone");
 						}
 						else if (cmd == 3)
 						{
-							getContext().sortContact("address");
-							getContext().fileState = 1;
+							getContext().group.sortContact("address");
 						}
 						else if (cmd == 4)
 						{
-							getContext().sortContact("group");
-							getContext().fileState = 1;
+							getContext().group.sortContact("group");
 						}
 						Log::w("已排序完成");
 					}
@@ -587,42 +381,52 @@ protected:
 		{
 			if (subpage == "")
 			{
+				Contact* current = getContext().group.currentContact;
+
 				int cmd = -1;
 				istr >> cmd;
 				if (cmd == 1)
 				{
-					cout << *getContext().currentContact;
+					cout << *current;
 				}
 				else if (cmd == 2)
 				{
+					cout << consoleforecolor::yellow << "当前姓名为 " << current->name << endl << consoleforecolor::normal;
 					subpage = "name";
 				}
 				else if (cmd == 3)
 				{
+					cout << consoleforecolor::yellow << "当前性别为 " << current->Fsex() << endl << consoleforecolor::normal;
 					subpage = "sex";
 				}
 				else if (cmd == 4)
 				{
+					cout << consoleforecolor::yellow << "当前电话为 " << current->phone << endl << consoleforecolor::normal;
 					subpage = "phone";
 				}
 				else if (cmd == 5)
 				{
+					cout << consoleforecolor::yellow << "当前地址为 " << current->address << endl << consoleforecolor::normal;
 					subpage = "address";
 				}
 				else if (cmd == 6)
 				{
+					cout << consoleforecolor::yellow << "当前邮政编码为 " << current->address << endl << consoleforecolor::normal;
 					subpage = "postCode";
 				}
 				else if (cmd == 7)
 				{
+					cout << consoleforecolor::yellow << "当前邮箱为 " << current->email << endl << consoleforecolor::normal;
 					subpage = "email";
 				}
 				else if (cmd == 8)
 				{
+					cout << consoleforecolor::yellow << "当前QQ为 " << current->qq << endl << consoleforecolor::normal;
 					subpage = "qq";
 				}
 				else if (cmd == 9)
 				{
+					cout << consoleforecolor::yellow << "当前分组为 " << current->Fgroup() << endl << consoleforecolor::normal;
 					subpage = "group";
 				}
 				else if (cmd == 10)
@@ -631,11 +435,11 @@ protected:
 				}
 				else if (cmd == 11)
 				{
-					if (getContext().currentContact->isValid())
+					if (getContext().group.currentContact->isValid())
 					{
 						subpage = "";
 						getContext().setPage("file");
-						getContext().currentContact = NULL;
+						getContext().group.currentContact = NULL;
 					}
 					else
 					{
@@ -659,22 +463,22 @@ protected:
 				}
 				else
 				{
-					getContext().currentContact->name = command;
+					getContext().group.currentContact->name = command;
 					Log::w("修改姓名字段成功");
 					subpage = "";
 					//getContext().saveFile();
-					getContext().fileState = 1;
+					getContext().group.notify();
 				}
 			}
 			else if (subpage == "sex")
 			{
 				if (command == "M" || command == "W")
 				{
-					getContext().currentContact->sex = command;
+					getContext().group.currentContact->sex = command;
 					Log::w("修改性别字段成功");
 					subpage = "";
 					//getContext().saveFile();
-					getContext().fileState = 1;
+					getContext().group.notify();
 				}
 				else if (command == "")
 				{
@@ -687,48 +491,53 @@ protected:
 			}
 			else if (subpage == "phone")
 			{
-				getContext().currentContact->phone = command;
-				Log::w("修改电话字段成功");
-				subpage = "";
-				getContext().fileState = 1;
+				if (command == "")
+				{
+					Log::e("电话不能为空");
+				}
+				else
+				{
+					if (Contact::isPhoneValid(command))
+					{
+						getContext().group.currentContact->phone = command;
+						Log::w("修改电话字段成功");
+						subpage = "";
+						getContext().group.notify();
+					}
+					else
+					{
+						Log::e("电话格式不符合");
+					}
+				}
+				//getContext().group.currentContact->phone = command;
+
 			}
 			else if (subpage == "address")
 			{
-				getContext().currentContact->address = command;
+				getContext().group.currentContact->address = command;
 				Log::w("修改地址字段成功");
 				subpage = "";
-				getContext().fileState = 1;
+				getContext().group.notify();
 			}
 			else if (subpage == "postCode")
 			{
-				getContext().currentContact->postCode = command;
+				getContext().group.currentContact->postCode = command;
 				Log::w("修改邮政编码字段成功");
 				subpage = "";
-				getContext().fileState = 1;
+				getContext().group.notify();
 			}
 			else if (subpage == "email")
 			{
-				getContext().currentContact->email = command;
+				getContext().group.currentContact->email = command;
 				Log::w("修改邮箱字段成功");
 				subpage = "";
-				getContext().fileState = 1;
+				getContext().group.notify();
 			}
 			else if (subpage == "delete")
 			{
 				if (command == "Y")
 				{
-					for (int i = 0; i < getContext().contacts.size(); i++)
-					{
-						if (getContext().contacts[i] == getContext().currentContact)
-						{
-							vector<Contact*>::iterator iter = getContext().contacts.begin() + i;
-							getContext().contacts.erase(iter);
-						}
-					}
-
-					delete getContext().currentContact;
-					getContext().currentContact = NULL;
-					getContext().fileState = 1;
+					getContext().group.notify();
 
 					subpage = "";
 					getContext().setPage("file");
@@ -746,17 +555,17 @@ protected:
 			}
 			else if (subpage == "group")
 			{
-				getContext().currentContact->type = command;
+				getContext().group.currentContact->type = command;
 				Log::w("修改分组信息成功");
 				subpage = "";
-				getContext().fileState = 1;
+				getContext().group.notify();
 			}
 			else if (subpage == "qq")
 			{
-				getContext().currentContact->qq = command;
+				getContext().group.currentContact->qq = command;
 				Log::w("修改QQ信息成功");
 				subpage = "";
-				getContext().fileState = 1;
+				getContext().group.notify();
 			}
 		}
 		return true;
@@ -788,93 +597,4 @@ private:
 		return 0;
 	}
 
-	//deprecated
-	Contact createContact(string name)
-	{
-		Contact contact(name);
-		int iloop = 1;
-		while (iloop > 0)
-		{
-			if (iloop == 1)
-			{
-				cout << consoleforecolor::seablue << "请输入性别(M/W)：" << consoleforecolor::normal;
-			}
-			else if (iloop == 2)
-			{
-				cout << consoleforecolor::seablue << "请输入电话(不可为空)：" << consoleforecolor::normal;
-			}
-			else if (iloop == 3)
-			{
-				cout << consoleforecolor::seablue << "请输入地址(不可为空)：" << consoleforecolor::normal;
-			}
-			else if (iloop == 4)
-			{
-				cout << consoleforecolor::seablue << "请输入邮箱：" << consoleforecolor::normal;
-			}
-			else if (iloop == 5)
-			{
-				cout << consoleforecolor::seablue << "请输入邮政编码：" << consoleforecolor::normal;
-			}
-			else if (iloop == 6)
-			{
-				cout << consoleforecolor::seablue << "请输入qq号码：" << consoleforecolor::normal;
-			}
-			else if (iloop == 7)
-			{
-				cout << consoleforecolor::seablue << "请输入分组信息：" << consoleforecolor::normal;
-			}
-
-			string line;
-			getline(cin, line);
-			//istringstream istr(line);
-
-			if (iloop == 1)
-			{
-				//cout << consoleforecolor::seablue << "请输入性别(M/W)：" << consoleforecolor::normal;
-				if (line == "M" || line == "W")
-				{
-					contact.sex = line;
-					++iloop;
-				}
-				else
-				{
-					Log::e("输入非法的字符，正确的输入应为M/W");
-				}
-			}
-			else if (iloop == 2)
-			{
-				//cout << consoleforecolor::seablue << "请输入电话：" << consoleforecolor::normal;
-				if (line == "")
-				{
-					Log::e("输入不能为空");
-				}
-				else
-				{
-					contact.phone = line;
-					++iloop;
-				}
-			}
-			else if (iloop == 3)
-			{
-				//cout << consoleforecolor::seablue << "请输入地址：" << consoleforecolor::normal;
-				if (line == "")
-				{
-					Log::e("输入不能为空");
-				}
-				else
-				{
-					contact.address = line;
-					++iloop;
-				}
-			}
-			else if (iloop == 4)
-			{
-				contact.email = line;
-			}
-			else if (iloop == 5)
-			{
-				contact.postCode = line;
-			}
-		}
-	}
 };

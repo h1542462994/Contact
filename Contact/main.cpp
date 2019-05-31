@@ -9,7 +9,7 @@ using namespace std;
 int main() 
 {
 	Context context;
-	DApp app(&context);
+	App app(&context);
 	app.run();
 
 }
