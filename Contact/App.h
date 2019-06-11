@@ -10,7 +10,7 @@
 
 using namespace std;
 
-class App :public AppBase, public IOnPageChangedListener
+class App :public AppBase
 {
 public:
 	App(Context* context) :AppBase(context) {}
@@ -19,25 +19,16 @@ protected:
 	virtual void onLoad() override
 	{
 		Log::i("欢迎来到电话簿系统，请敬请享用吧。");
-		//cout << getContext().getMenu("home");
-	}
-
-	virtual void onPageChanged(string page) override
-	{
-		//cout << getContext().getCurrentMenu();
 	}
 
 	virtual string onTip() override
 	{
-
-
 		string tip = "";
 		string page = getContext().getPage();
 		string subpage = getContext().subpage;
 
 		if (subpage == "")
 		{
-			//system("cls");
 			cout << getContext().getCurrentMenu();
 		}
 
@@ -411,7 +402,7 @@ protected:
 				}
 				else if (cmd == 6)
 				{
-					cout << consoleforecolor::yellow << "当前邮政编码为 " << current->address << endl << consoleforecolor::normal;
+					cout << consoleforecolor::yellow << "当前邮政编码为 " << current->postCode << endl << consoleforecolor::normal;
 					subpage = "postCode";
 				}
 				else if (cmd == 7)
@@ -463,18 +454,32 @@ protected:
 				}
 				else
 				{
-					getContext().group.currentContact->name = command;
-					Log::w("修改姓名字段成功");
+					if (getContext().group.hasName(command))
+					{
+						Log::w("在联系人中已有该人，所以无法修改姓名为当前值");
+					}
+					else
+					{
+						getContext().group.currentContact->name = command;
+						getContext().group.notify();
+						Log::w("修改姓名字段成功");
+					}
 					subpage = "";
 					//getContext().saveFile();
-					getContext().group.notify();
 				}
 			}
 			else if (subpage == "sex")
 			{
-				if (command == "M" || command == "W")
+				if (command == "M" || command == "W" || command == "m" || command == "w")
 				{
-					getContext().group.currentContact->sex = command;
+					if (command == "M" || command == "m")
+					{
+						getContext().group.currentContact->sex = "M";
+					}
+					else
+					{
+						getContext().group.currentContact->sex = "W";
+					}
 					Log::w("修改性别字段成功");
 					subpage = "";
 					//getContext().saveFile();
@@ -521,10 +526,20 @@ protected:
 			}
 			else if (subpage == "postCode")
 			{
-				getContext().group.currentContact->postCode = command;
-				Log::w("修改邮政编码字段成功");
-				subpage = "";
-				getContext().group.notify();
+				if (Contact::isPostCodeValid(command))
+				{
+					getContext().group.currentContact->postCode = command;
+					Log::w("修改邮政编码字段成功");
+					getContext().group.notify();
+					subpage = "";
+				}
+				else
+				{
+					Log::w("修改邮政编码字段失败，正确输入应为空或者6位数字");
+				}
+
+
+
 			}
 			else if (subpage == "email")
 			{
@@ -537,6 +552,7 @@ protected:
 			{
 				if (command == "Y")
 				{
+					getContext().group.deleteContact();
 					getContext().group.notify();
 
 					subpage = "";
@@ -562,39 +578,22 @@ protected:
 			}
 			else if (subpage == "qq")
 			{
-				getContext().group.currentContact->qq = command;
-				Log::w("修改QQ信息成功");
-				subpage = "";
-				getContext().group.notify();
+				if (Contact::isQQValid(command))
+				{
+					getContext().group.currentContact->qq = command;
+					Log::w("修改QQ信息成功");
+					getContext().group.notify();
+					subpage = "";
+				}
+				else
+				{
+					Log::w("修改QQ信息失败，正确输入应该为空或者5-12位数字");
+				}
+
+
 			}
 		}
 		return true;
 	}
-
 private:
-	//用于检查文件名是否合法。
-	int checkFileName(string fileName)
-	{
-		if (fileName == "")
-		{
-			return 1;
-		}
-		else if (fileName.size() > 40)
-		{
-			return 2;
-		}
-		else
-		{
-			string except = "/\\:*\"<>|?";
-			for (int i = 0; i < except.length(); i++)
-			{
-				if (fileName.find(except[i]) != string::npos)
-				{
-					return 3;
-				}
-			}
-		}
-		return 0;
-	}
-
 };

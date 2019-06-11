@@ -16,18 +16,18 @@ public:
 		onLoad();
 		handleInput();
 	}
-	AppBase(Context* context):context(context)
+	AppBase(Context* context) :context(context)
 	{
 	}
 
 protected:
 	//显示提示字符串信息，由handleInput()函数来调用，需要进行重写。
-	virtual string onTip() = 0;
+	virtual string onTip() { return ""; }
 	//在初始化的时候会被调用的函数。
-	virtual void onLoad() = 0;
+	virtual void onLoad() {}
 	//处理控制字符信息，由handleInput()函数来调用，需要进行重写。
 	//@return 是否继续执行，若返回false，则表示应用程序终止运行。
-	virtual bool onHandleInput(string command) = 0;
+	virtual bool onHandleInput(string command) { return false; }
 	
 	//获取当前的上下文信息。
 	Context& getContext()

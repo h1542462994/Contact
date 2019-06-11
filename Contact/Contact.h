@@ -114,6 +114,52 @@ public:
 		return true;
 	}
 
+	static bool isPostCodeValid(string postCode) 
+	{
+		if (postCode == "")
+		{
+			return true;
+		}
+		else
+		{
+			if (postCode.length()!= 6)
+			{
+				return false;
+			}
+			for (int i = 0; i < postCode.length(); i++)
+			{
+				if (!isdigit(postCode[i]))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	static bool isQQValid(string qq) 
+	{
+		if (qq == "")
+		{
+			return true;
+		}
+		else
+		{
+			if (qq.length() < 5 || qq.length() > 11)
+			{
+				return false;
+			}
+			for (int i = 0; i < qq.length(); i++)
+			{
+				if (!isdigit(qq[i]))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	bool isValid()
 	{
 		if (sex == "M" || sex == "W")

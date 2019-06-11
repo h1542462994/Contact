@@ -11,5 +11,4 @@ int main()
 	Context context;
 	App app(&context);
 	app.run();
-
 }

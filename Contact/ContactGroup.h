@@ -407,7 +407,18 @@ public:
 
 		fileState = FileState::Changed;
 	}
-
+	bool hasName(string name) 
+	{
+		int len = data.size();
+		for (int i = 0; i < len; i++)
+		{
+			if (data[i] != currentContact && data[i]->name == name)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 
 	FileState fileState = FileState::Closed;
 	//保存的数据
@@ -419,7 +430,7 @@ public:
 	vector<Contact*>* searchdata = NULL;
 	string searchMode;
 	string searchKey;
-	const int eggvar = 1;
+	const int eggvar = 0;
 private:
 
 	void clearData()
