@@ -236,21 +236,6 @@ public:
 	}
 };
 
-ostream& operator<< (ostream & out, consoleforecolor color)
-{
-	setConsoleColor(consolecolorhelper::getColorId(color));
-
-	return out;
-}
-
-
-ostream& operator<< (ostream & out, consolebackcolor color)
-{
-	setConsoleColor(consolecolorhelper::getColorId(color));
-
-	return out;
-}
-
 //×éºÏÉ«
 class consolecolorjoin
 {
@@ -271,7 +256,6 @@ private:
 	consolebackcolor _back;
 };
 
-consolecolorjoin operator + (consoleforecolor fore, consolebackcolor back)
-{
-	return consolecolorjoin(fore, back);
-}
+ostream& operator<< (ostream& out, consoleforecolor color);
+ostream& operator<< (ostream& out, consolebackcolor color);
+consolecolorjoin operator + (consoleforecolor fore, consolebackcolor back);

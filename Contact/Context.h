@@ -68,18 +68,4 @@ private:
 	string page;
 	IOnPageChangedListener* pageChangedListener = NULL;
 	
-
-	//检查str2是否是str1的子串，一种最简单的模糊查找方法
-	bool hasSubString(string str1,string str2)
-	{
-		if (str1.find(str2)!= string::npos)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
 };
